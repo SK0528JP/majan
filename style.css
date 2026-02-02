@@ -1,0 +1,308 @@
+@charset "UTF-8";
+
+/* =========================================
+   1. DESIGN TOKENS & VARIABLES
+   ========================================= */
+:root {
+    /* Nordic Color Palette */
+    --clr-bg: #F8FAFC;          /* 背景：透き通るようなグレー */
+    --clr-surface: #FFFFFF;     /* カード：純白 */
+    --clr-main: #2D3E50;        /* メイン：深い夜空のようなネイビー */
+    --clr-sub: #64748B;         /* サブ：洗練されたブルーグレー */
+    --clr-accent: #4A90E2;      /* アクセント：北欧の湖のようなブルー */
+    
+    /* Semantic Colors */
+    --clr-success: #48BB78;     /* 安全・鳴きOK：森のグリーン */
+    --clr-danger: #F56565;      /* 危険・門前限定：ベリーのレッド */
+    --clr-warning: #ECC94B;     /* 注目：マスタードイエロー */
+    
+    /* Tile Colors */
+    --tile-ivory: #FFFDF9;      /* 牌の表面：象牙色 */
+    --tile-shadow: #D1D5DB;     /* 牌の影 */
+    --tile-side: #E2E8F0;       /* 牌の側面 */
+    
+    /* Effects */
+    --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+    --shadow-md: 0 10px 25px -5px rgba(0,0,0,0.08);
+    --radius-m: 16px;
+    --radius-l: 32px;
+    --transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* =========================================
+   2. BASE STYLES
+   ========================================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background-color: var(--clr-bg);
+    color: var(--clr-main);
+    line-height: 1.7;
+    word-break: break-word;
+    -webkit-font-smoothing: antialiased;
+}
+
+.container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+/* =========================================
+   3. HERO & NAVIGATION
+   ========================================= */
+.hero {
+    padding: 80px 0 120px;
+    background: linear-gradient(135deg, #1E293B 0%, #334155 100%);
+    color: white;
+    text-align: center;
+    border-radius: 0 0 var(--radius-l) var(--radius-l);
+    position: relative;
+    overflow: hidden;
+}
+
+/* 背景にうっすらと麻雀牌のグリッドを敷く装飾 */
+.hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0.05;
+    background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0);
+    background-size: 32px 32px;
+}
+
+.hero h1 {
+    font-size: clamp(2.2rem, 6vw, 3.5rem);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    margin-bottom: 16px;
+}
+
+.hero p {
+    font-size: 1.1rem;
+    opacity: 0.8;
+    font-weight: 400;
+}
+
+.sticky-nav {
+    position: sticky;
+    top: 20px;
+    z-index: 1000;
+    margin: -40px auto 60px;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    padding: 8px;
+    border-radius: 100px;
+    box-shadow: var(--shadow-md);
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    width: fit-content;
+}
+
+.nav-btn {
+    padding: 10px 24px;
+    border: none;
+    background: transparent;
+    color: var(--clr-sub);
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    border-radius: 100px;
+    transition: var(--transition);
+}
+
+.nav-btn:hover {
+    color: var(--clr-main);
+    background: rgba(0,0,0,0.03);
+}
+
+.nav-btn.active {
+    background: var(--clr-main);
+    color: white;
+}
+
+/* =========================================
+   4. MAHJONG TILES (PREMIUM 3D)
+   ========================================= */
+.hand-display {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 24px;
+    background: #EDF2F7;
+    border-radius: var(--radius-m);
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.tile {
+    width: 46px;
+    height: 62px;
+    background: var(--tile-ivory);
+    border-radius: 4px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    font-weight: 900;
+    box-shadow: 
+        0 1px 0 #fff inset,
+        0 4px 0 var(--tile-side), /* 牌の厚み */
+        0 5px 10px rgba(0,0,0,0.1); /* 影 */
+    transition: var(--transition);
+    cursor: default;
+    user-select: none;
+}
+
+.tile:hover {
+    transform: translateY(-4px);
+    box-shadow: 
+        0 1px 0 #fff inset,
+        0 6px 0 var(--tile-side),
+        0 12px 20px rgba(0,0,0,0.15);
+}
+
+/* 種類別カラー */
+.tile.man { color: #E53E3E; }
+.tile.pin { color: #3182CE; }
+.tile.sou { color: #38A169; }
+.tile.ji  { color: #2D3748; }
+
+.tile-label {
+    position: absolute;
+    top: 2px;
+    left: 4px;
+    font-size: 0.5rem;
+    color: #A0AEC0;
+    font-weight: normal;
+}
+
+/* =========================================
+   5. CONTENT CARDS
+   ========================================= */
+section {
+    background: var(--clr-surface);
+    padding: 48px;
+    border-radius: var(--radius-m);
+    margin-bottom: 40px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid rgba(0,0,0,0.03);
+}
+
+h2 {
+    font-size: 1.8rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    color: var(--clr-main);
+}
+
+h2 i {
+    color: var(--clr-accent);
+}
+
+h3 {
+    margin: 32px 0 16px;
+    font-size: 1.3rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+p {
+    margin-bottom: 16px;
+    color: var(--clr-sub);
+}
+
+/* 用語強調ラベル */
+.term-label {
+    background: #E2E8F0;
+    color: var(--clr-main);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 0.95em;
+}
+
+/* =========================================
+   6. YAKU (Winning Hand) GRID
+   ========================================= */
+.yaku-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+}
+
+.yaku-card {
+    border: 1px solid #E2E8F0;
+    border-radius: var(--radius-m);
+    padding: 24px;
+    transition: var(--transition);
+    background: white;
+}
+
+.yaku-card:hover {
+    border-color: var(--clr-accent);
+    box-shadow: var(--shadow-md);
+}
+
+.yaku-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+
+.yaku-name {
+    font-size: 1.4rem;
+    font-weight: 900;
+    color: var(--clr-main);
+}
+
+.badge {
+    padding: 4px 12px;
+    border-radius: 100px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.badge.danger { background: #FED7D7; color: #C53030; }
+.badge.success { background: #C6F6D5; color: #2F855A; }
+
+/* =========================================
+   7. FOOTER & MISC
+   ========================================= */
+footer {
+    text-align: center;
+    padding: 80px 0;
+    color: var(--clr-sub);
+    font-size: 0.9rem;
+}
+
+.info-box {
+    padding: 24px;
+    border-radius: var(--radius-m);
+    margin: 24px 0;
+    display: flex;
+    gap: 16px;
+}
+
+.info-box.warning { background-color: #FFFBEB; border: 1px solid #FEF3C7; }
+.info-box.warning i { color: var(--clr-warning); }
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    section { padding: 32px 20px; }
+    .sticky-nav { width: 90%; overflow-x: auto; white-space: nowrap; }
+    .tile { width: 38px; height: 52px; font-size: 1.4rem; }
+}
