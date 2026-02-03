@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nordic Mahjong Trainer | 北欧風麻雀練習機</title>
+    <meta name="description" content="実戦形式で役と点数計算をマスターするためのシングルプレイヤー専用麻雀練習アプリ">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Noto+Sans+JP:wght@300;400;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="app-wrapper">
+        <header id="game-header">
+            <div class="header-content">
+                <div class="round-info">
+                    <span id="bakaze">東</span><span id="kyoku">1</span>局 
+                    <span id="honba" class="sub-info">0本場</span>
+                </div>
+                <div class="dora-display">
+                    <span class="label">DORA</span>
+                    <div id="dora-container" class="dora-tiles">
+                        <div class="tile-mini hidden"></div>
+                    </div>
+                </div>
+                <div class="score-display">
+                    <span class="label">SCORE</span>
+                    <span id="player-score">25,000</span>
+                </div>
+            </div>
+        </header>
+
+        <main id="mahjong-table">
+            
+            <div class="opponent-area top">
+                <div class="opponent-hand-placeholder"></div>
+            </div>
+
+            <div class="table-center">
+                <div class="river-container" id="player-river">
+                    </div>
+                
+                <div class="center-board">
+                    <div class="remaining-tiles">
+                        <small>残</small><span id="wall-count">70</span>
+                    </div>
+                    <div id="game-message">あなたの番です</div>
+                </div>
+            </div>
+
+            <div id="action-overlay" class="hidden">
+                <div class="action-buttons">
+                    <button id="btn-pon" class="btn-action">ポン</button>
+                    <button id="btn-chi" class="btn-action">チー</button>
+                    <button id="btn-riichi" class="btn-action">リーチ</button>
+                    <button id="btn-ron" class="btn-action">ロン</button>
+                    <button id="btn-tsumo" class="btn-action">ツモ</button>
+                    <button id="btn-cancel" class="btn-action btn-secondary">スルー</button>
+                </div>
+            </div>
+
+            <div class="player-area">
+                <div class="player-hand-wrapper">
+                    <div id="player-hand" class="hand-main">
+                        </div>
+                    <div id="tsumo-slot" class="tsumo-area">
+                        </div>
+                </div>
+            </div>
+        </main>
+
+        <aside id="training-panel">
+            <div class="panel-section">
+                <h3><span class="icon">💡</span> 練習サポート</h3>
+                <div class="helper-card">
+                    <p class="helper-label">現在の待ち牌</p>
+                    <div id="machi-display" class="machi-list">
+                        <span class="placeholder">テンパイしていません</span>
+                    </div>
+                </div>
+                <div class="helper-card">
+                    <p class="helper-label">成立しそうな役</p>
+                    <ul id="yaku-candidate" class="yaku-list">
+                        <li>平和 (1翻)</li>
+                        <li>断么九 (1翻)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <h3><span class="icon">📊</span> 統計</h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="label">最大翻数</span>
+                        <span id="max-yaku">---</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="label">平均順位</span>
+                        <span id="avg-rank">1.0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-controls">
+                <button id="btn-settings" class="btn-icon">⚙️ 設定</button>
+                <button id="btn-restart" class="btn-icon">🔄 再配牌</button>
+            </div>
+        </aside>
+
+        <div id="modal-container" class="modal hidden">
+            <div class="modal-content">
+                <h2 id="modal-title">和了！</h2>
+                <div id="modal-body">
+                    </div>
+                <button id="modal-close" class="btn-primary">次へ</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js" defer></script>
+</body>
+</html>
