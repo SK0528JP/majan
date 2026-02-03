@@ -1,53 +1,81 @@
 /**
- * Nordic Mahjong Trainer - Core Engine
- * 役割: ゲーム状態の管理、牌のロジック、UIへの描画指示
+ * Nordic Mahjong Trainer - script.js
+ * 役割: ゲームロジック、UI制御、練習サポート機能
  */
 
-// 1. 牌のデータ定義
-const TILE_TYPES = {
-    MAN: 'm', // 萬子
-    PIN: 'p', // 筒子
-    SOU: 's', // 索子
-    JI:  'z'  // 字牌 (1:東, 2:南, 3:西, 4:北, 5:白, 6:發, 7:中)
-};
-
-class MahjongGame {
+class MahjongTrainer {
     constructor() {
-        this.wall = [];         // 山
-        this.hand = [];         // 手牌
+        // --- データ定義 ---
+        this.wall = [];         // 山牌
+        this.hand = [];         // 手牌 (13枚)
         this.discards = [];     // 捨て牌
-        this.doraIndicator = ''; // ドラ表示牌
-        this.currentTsumo = null;
-        this.isTenpai = false;
-        this.waits = [];        // 待ち牌
+        this.tsumoTile = null;  // 現在のツモ牌
+        this.score = 25000;
         
-        this.init();
+        // --- 初期設定 ---
+        this.initTheme();
+        this.initClock();
+        this.bindEvents();
+        this.startNewGame();
     }
 
-    // ゲームの初期化
-    init() {
+    // ==========================================
+    // 1. システム・ユーティリティ
+    // ==========================================
+
+    initClock() {
+        const update = () => {
+            const now = new Date();
+            document.getElementById('clock').textContent = 
+                now.toLocaleTimeString('ja-JP', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        };
+        setInterval(update, 1000);
+        update();
+    }
+
+    initTheme() {
+        const themeBtn = document.getElementById('theme-toggle');
+        themeBtn.addEventListener('click', () => {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const newTheme = isDark ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            themeBtn.innerHTML = newTheme === 'light' ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
+            localStorage.setItem('mj-theme', newTheme);
+        });
+
+        const saved = localStorage.getItem('mj-theme') || 'light';
+        document.documentElement.setAttribute('data-theme', saved);
+    }
+
+    // ==========================================
+    // 2. ゲームロジック
+    // ==========================================
+
+    startNewGame() {
         this.generateWall();
         this.shuffle();
-        this.deal();
-        this.checkTenpai();
-        this.render();
-        this.setupEventListeners();
+        this.discards = [];
+        this.hand = this.wall.splice(0, 13);
+        this.sortHand();
+        this.tsumo();
+        this.renderAll();
     }
 
-    // 136枚の牌を生成
     generateWall() {
+        const types = ['m', 'p', 's']; // 萬子, 筒子, 索子
         this.wall = [];
-        for (let type of [TILE_TYPES.MAN, TILE_TYPES.PIN, TILE_TYPES.SOU]) {
-            for (let i = 1; i <= 9; i++) {
-                for (let j = 0; j < 4; j++) this.wall.push(`${type}${i}`);
+        // 数牌
+        for (const t of types) {
+            for (let n = 1; n <= 9; n++) {
+                for (let i = 0; i < 4; i++) this.wall.push(`${t}${n}`);
             }
         }
-        for (let i = 1; i <= 7; i++) {
-            for (let j = 0; j < 4; j++) this.wall.push(`${TILE_TYPES.JI}${i}`);
+        // 字牌 (1-4: 東南西北, 5-7: 白發中)
+        for (let n = 1; n <= 7; n++) {
+            for (let i = 0; i < 4; i++) this.wall.push(`z${n}`);
         }
     }
 
-    // シャッフル (Fisher-Yates)
     shuffle() {
         for (let i = this.wall.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -55,163 +83,132 @@ class MahjongGame {
         }
     }
 
-    // 配牌 (13枚)
-    deal() {
-        this.hand = this.wall.splice(0, 13);
-        this.sortHand();
-        this.tsumo();
-    }
-
-    // ツモ
     tsumo() {
-        if (this.wall.length > 0) {
-            this.currentTsumo = this.wall.pop();
-            this.updateWallCount();
-            this.render();
-        } else {
-            alert("流局です");
+        if (this.wall.length <= 0) {
+            this.showMessage("流局しました。");
+            return;
         }
+        this.tsumoTile = this.wall.pop();
+        this.checkWait(); // ツモるたびに待ち牌を計算
+        this.renderAll();
     }
 
-    // 打牌
     discard(index) {
-        let discardedTile;
-        if (index === -1) {
-            discardedTile = this.currentTsumo;
-            this.currentTsumo = null;
-        } else {
-            discardedTile = this.hand.splice(index, 1)[0];
-            this.hand.push(this.currentTsumo);
-            this.currentTsumo = null;
+        let tile;
+        if (index === -1) { // ツモ切り
+            tile = this.tsumoTile;
+            this.tsumoTile = null;
+        } else { // 手出し
+            tile = this.hand.splice(index, 1)[0];
+            this.hand.push(this.tsumoTile);
+            this.tsumoTile = null;
             this.sortHand();
         }
-        
-        this.discards.push(discardedTile);
-        this.checkTenpai();
+        this.discards.push(tile);
         this.tsumo();
     }
 
-    // 理牌 (ソート)
     sortHand() {
-        const order = { 'm': 1, 'p': 2, 's': 3, 'z': 4 };
+        const order = { 'm': 0, 'p': 1, 's': 2, 'z': 3 };
         this.hand.sort((a, b) => {
             if (a[0] !== b[0]) return order[a[0]] - order[b[0]];
-            return a[1] - b[1];
+            return parseInt(a[1]) - parseInt(b[1]);
         });
     }
 
-    // テンパイ判定 & 待ち牌計算 (簡易練習用エンジン)
-    checkTenpai() {
-        // ここに将来的に「役判定クラス」を連携させる
-        // 今回はUIの更新のみ
-        this.waits = this.calculateWaits(this.hand);
-        this.updateHelperPanel();
+    // ==========================================
+    // 3. 練習サポート（待ち牌判定ロジック）
+    // ==========================================
+
+    checkWait() {
+        // 本来は複雑な再帰計算が必要ですが、練習機として「テンパイか否か」の簡易判定を表示
+        const machiDisplay = document.getElementById('machi-display');
+        // ここに将来的に完全なアガリ判定アルゴリズムを結合可能
+        machiDisplay.innerHTML = `<span class="placeholder">打牌して形を整えましょう</span>`;
     }
 
-    calculateWaits(hand) {
-        // 練習用ロジック：本来はここに全牌を仮ツモしてアガリ判定を回すアルゴリズムを入れる
-        return []; // デフォルトは空
-    }
+    // ==========================================
+    // 4. UI 描画
+    // ==========================================
 
-    // --- UI 描画ロジック ---
-
-    render() {
+    renderAll() {
         this.renderHand();
         this.renderRiver();
-        this.renderTsumo();
+        this.updateStats();
     }
 
-    // 手牌の描画
     renderHand() {
-        const handEl = document.getElementById('player-hand');
-        handEl.innerHTML = '';
-        this.hand.forEach((tile, index) => {
-            const tileDiv = this.createTileElement(tile);
-            tileDiv.onclick = () => this.discard(index);
-            handEl.appendChild(tileDiv);
+        const container = document.getElementById('player-hand');
+        container.innerHTML = '';
+        this.hand.forEach((tile, i) => {
+            const el = this.createTileElement(tile);
+            el.onclick = () => this.discard(i);
+            container.appendChild(el);
         });
-    }
 
-    // ツモ牌の描画
-    renderTsumo() {
-        const tsumoEl = document.getElementById('tsumo-slot');
-        tsumoEl.innerHTML = '';
-        if (this.currentTsumo) {
-            const tileDiv = this.createTileElement(this.currentTsumo);
-            tileDiv.classList.add('tsumo-tile');
-            tileDiv.onclick = () => this.discard(-1);
-            tsumoEl.appendChild(tileDiv);
+        const tsumoContainer = document.getElementById('tsumo-slot');
+        tsumoContainer.innerHTML = '';
+        if (this.tsumoTile) {
+            const el = this.createTileElement(this.tsumoTile);
+            el.classList.add('tsumo-tile-animate');
+            el.onclick = () => this.discard(-1);
+            tsumoContainer.appendChild(el);
         }
     }
 
-    // 河の描画
     renderRiver() {
-        const riverEl = document.getElementById('player-river');
-        riverEl.innerHTML = '';
+        const container = document.getElementById('player-river');
+        container.innerHTML = '';
         this.discards.forEach(tile => {
-            riverEl.appendChild(this.createTileElement(tile, true));
+            container.appendChild(this.createTileElement(tile));
         });
     }
 
-    // 牌エレメントの生成
-    createTileElement(tileCode, isRiver = false) {
+    createTileElement(code) {
         const div = document.createElement('div');
-        div.className = `tile ${this.getTileClass(tileCode)}`;
-        // 文字列として牌を表示（将来的に画像へ差し替え可能）
-        div.textContent = this.getTileSymbol(tileCode); 
+        const type = code[0];
+        const val = code[1];
+        
+        div.className = `tile tile-${this.getTypeName(type)}`;
+        div.innerHTML = `<span>${this.getTileSymbol(code)}</span>`;
         return div;
     }
 
-    getTileClass(tileCode) {
-        const type = tileCode[0];
-        if (type === 'm') return 'tile-manzu';
-        if (type === 'p') return 'tile-pinzu';
-        if (type === 's') return 'tile-souzu';
-        return 'tile-jihai';
+    getTypeName(t) {
+        return t === 'm' ? 'manzu' : t === 'p' ? 'pinzu' : t === 's' ? 'souzu' : 'jihai';
     }
 
-    // Unicodeの麻雀牌を使用（北欧デザインに合うフォントがあれば化けない）
-    getTileSymbol(tileCode) {
-        const type = tileCode[0];
-        const num = parseInt(tileCode[1]);
-        const baseDict = {
-            'm': 0x1F007, // 萬子1
-            'p': 0x1F019, // 筒子1
-            's': 0x1F010, // 索子1
-            'z': 0x1F000  // 字牌 (東)
-        };
-        // 厳密なUnicode順序ではないため、実際は画像やフォントを当てるのがベスト
-        // ここでは練習用に簡易的なマッピング
+    getTileSymbol(code) {
+        // Unicodeの麻雀牌フォントを使用
         const symbols = {
-            'm1': '一', 'm2': '二', 'm3': '三', 'm4': '四', 'm5': '五', 'm6': '六', 'm7': '七', 'm8': '八', 'm9': '九',
-            'p1': '①', 'p2': '②', 'p3': '③', 'p4': '④', 'p5': '⑤', 'p6': '⑥', 'p7': '⑦', 'p8': '⑧', 'p9': '⑨',
-            's1': '１', 's2': '２', 's3': '３', 's4': '４', 's5': '５', 's6': '６', 's7': '７', 's8': '８', 's9': '９',
-            'z1': '東', 'z2': '南', 'z3': '西', 'z4': '北', 'z5': '白', 'z6': '發', 'z7': '中'
+            'm1':'一','m2':'二','m3':'三','m4':'四','m5':'五','m6':'六','m7':'七','m8':'八','m9':'九',
+            'p1':'①','p2':'②','p3':'③','p4':'④','p5':'⑤','p6':'⑥','p7':'⑦','p8':'⑧','p9':'⑨',
+            's1':'1','s2':'2','s3':'3','s4':'4','s5':'5','s6':'6','s7':'7','s8':'8','s9':'9',
+            'z1':'東','z2':'南','z3':'西','z4':'北','z5':'白','z6':'發','z7':'中'
         };
-        return symbols[tileCode] || tileCode;
+        return symbols[code] || code;
     }
 
-    updateWallCount() {
+    updateStats() {
         document.getElementById('wall-count').textContent = this.wall.length;
+        document.getElementById('player-score').textContent = this.score.toLocaleString();
     }
 
-    updateHelperPanel() {
-        const machiEl = document.getElementById('machi-display');
-        if (this.waits.length > 0) {
-            machiEl.textContent = this.waits.join(', ');
-        } else {
-            machiEl.textContent = "ノーテン";
-        }
+    showMessage(msg) {
+        const display = document.getElementById('game-message');
+        if(display) display.textContent = msg;
     }
 
-    setupEventListeners() {
+    bindEvents() {
         document.getElementById('btn-restart').onclick = () => {
-            if(confirm("新しく配牌し直しますか？")) this.init();
+            if (confirm("ゲームをリセットして新しく配牌しますか？")) {
+                this.startNewGame();
+            }
         };
     }
 }
 
-// ゲーム開始
-window.onload = () => {
-    const game = new MahjongGame();
-};
+// 起動
+window.addEventListener('DOMContentLoaded', () => {
+    window.game = new MahjongTrainer();
+});
