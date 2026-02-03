@@ -1,14 +1,12 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="ja" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nordic Mahjong Trainer | 北欧風麻雀練習機</title>
-    <meta name="description" content="実戦形式で役と点数計算をマスターするためのシングルプレイヤー専用麻雀練習アプリ">
+    <title>Nordic Mahjong | Pro Trainer</title>
     
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Noto+Sans+JP:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=JetBrains+Mono:wght@400&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="style.css">
 </head>
@@ -16,111 +14,110 @@
 
     <div id="app-wrapper">
         <header id="game-header">
-            <div class="header-content">
-                <div class="round-info">
-                    <span id="bakaze">東</span><span id="kyoku">1</span>局 
-                    <span id="honba" class="sub-info">0本場</span>
+            <div class="header-left">
+                <div class="digital-clock" id="clock">00:00:00</div>
+                <div class="round-badge">
+                    <i class="fa-solid fa-compass"></i>
+                    <span id="bakaze">東</span><span id="kyoku">1</span>局
                 </div>
-                <div class="dora-display">
+            </div>
+
+            <div class="header-center">
+                <div class="dora-indicator-wrapper">
                     <span class="label">DORA</span>
-                    <div id="dora-container" class="dora-tiles">
-                        <div class="tile-mini hidden"></div>
+                    <div id="dora-container">
+                        <div class="tile-mini-placeholder"></div>
                     </div>
                 </div>
-                <div class="score-display">
-                    <span class="label">SCORE</span>
+            </div>
+
+            <div class="header-right">
+                <div class="score-box">
+                    <i class="fa-solid fa-coins"></i>
                     <span id="player-score">25,000</span>
                 </div>
+                <button id="theme-toggle" class="btn-icon-alt" title="テーマ切り替え">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
             </div>
         </header>
 
         <main id="mahjong-table">
-            
-            <div class="opponent-area top">
-                <div class="opponent-hand-placeholder"></div>
+            <div class="wall-status">
+                <i class="fa-solid fa-layer-group"></i>
+                <span id="wall-count">70</span>
             </div>
 
             <div class="table-center">
-                <div class="river-container" id="player-river">
+                <div class="river-layout" id="player-river">
                     </div>
-                
-                <div class="center-board">
-                    <div class="remaining-tiles">
-                        <small>残</small><span id="wall-count">70</span>
-                    </div>
-                    <div id="game-message">あなたの番です</div>
-                </div>
             </div>
 
             <div id="action-overlay" class="hidden">
-                <div class="action-buttons">
-                    <button id="btn-pon" class="btn-action">ポン</button>
-                    <button id="btn-chi" class="btn-action">チー</button>
-                    <button id="btn-riichi" class="btn-action">リーチ</button>
-                    <button id="btn-ron" class="btn-action">ロン</button>
-                    <button id="btn-tsumo" class="btn-action">ツモ</button>
-                    <button id="btn-cancel" class="btn-action btn-secondary">スルー</button>
+                <div class="action-buttons-group">
+                    <button id="btn-riichi" class="btn-action special"><i class="fa-solid fa-fire"></i> リーチ</button>
+                    <button id="btn-tsumo" class="btn-action win"><i class="fa-solid fa-crown"></i> ツモ</button>
+                    <button id="btn-ron" class="btn-action win"><i class="fa-solid fa-crown"></i> ロン</button>
+                    <button id="btn-cancel" class="btn-action-cancel">スルー</button>
                 </div>
             </div>
 
-            <div class="player-area">
-                <div class="player-hand-wrapper">
-                    <div id="player-hand" class="hand-main">
-                        </div>
-                    <div id="tsumo-slot" class="tsumo-area">
-                        </div>
+            <div class="player-hand-section">
+                <div class="hand-flex-container">
+                    <div id="player-hand" class="tiles-row"></div>
+                    <div class="tsumo-spacer"></div>
+                    <div id="tsumo-slot" class="tsumo-tile-area"></div>
                 </div>
             </div>
         </main>
 
         <aside id="training-panel">
-            <div class="panel-section">
-                <h3><span class="icon">💡</span> 練習サポート</h3>
-                <div class="helper-card">
-                    <p class="helper-label">現在の待ち牌</p>
-                    <div id="machi-display" class="machi-list">
-                        <span class="placeholder">テンパイしていません</span>
-                    </div>
+            <section class="panel-block">
+                <h4><i class="fa-solid fa-wand-magic-sparkles"></i> 待ち牌ヒント</h4>
+                <div id="machi-display" class="hint-card">
+                    <span class="empty-msg">テンパイしていません</span>
                 </div>
-                <div class="helper-card">
-                    <p class="helper-label">成立しそうな役</p>
-                    <ul id="yaku-candidate" class="yaku-list">
-                        <li>平和 (1翻)</li>
-                        <li>断么九 (1翻)</li>
-                    </ul>
-                </div>
-            </div>
+            </section>
 
-            <div class="panel-section">
-                <h3><span class="icon">📊</span> 統計</h3>
-                <div class="stats-grid">
-                    <div class="stat-item">
-                        <span class="label">最大翻数</span>
-                        <span id="max-yaku">---</span>
+            <section class="panel-block">
+                <h4><i class="fa-solid fa-chart-line"></i> 実戦データ</h4>
+                <div class="stats-mini-grid">
+                    <div class="stat-box">
+                        <span class="stat-label">平均翻数</span>
+                        <span class="stat-value">3.2</span>
                     </div>
-                    <div class="stat-item">
-                        <span class="label">平均順位</span>
-                        <span id="avg-rank">1.0</span>
+                    <div class="stat-box">
+                        <span class="stat-label">アガリ率</span>
+                        <span class="stat-value">24%</span>
                     </div>
                 </div>
-            </div>
+            </section>
 
-            <div class="panel-controls">
-                <button id="btn-settings" class="btn-icon">⚙️ 設定</button>
-                <button id="btn-restart" class="btn-icon">🔄 再配牌</button>
+            <div class="panel-footer">
+                <button id="btn-restart" class="btn-secondary">
+                    <i class="fa-solid fa-rotate-right"></i> リセット
+                </button>
+                <button id="btn-help" class="btn-secondary">
+                    <i class="fa-solid fa-circle-question"></i> ヘルプ
+                </button>
             </div>
         </aside>
 
-        <div id="modal-container" class="modal hidden">
-            <div class="modal-content">
-                <h2 id="modal-title">和了！</h2>
-                <div id="modal-body">
+        <div id="modal-container" class="modal-overlay hidden">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <i class="fa-solid fa-trophy"></i>
+                    <h2 id="modal-title">和了！</h2>
+                </div>
+                <div id="modal-body" class="modal-content">
                     </div>
-                <button id="modal-close" class="btn-primary">次へ</button>
+                <footer class="modal-footer">
+                    <button id="modal-close" class="btn-primary">次の局へ</button>
+                </footer>
             </div>
         </div>
     </div>
 
-    <script src="script.js" defer></script>
+    <script src="script.js"></script>
 </body>
 </html>
