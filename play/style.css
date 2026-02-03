@@ -1,229 +1,349 @@
 /* ==========================================================================
-   1. 変数定義 - 北欧風カラーパレット
+   1. デザイン変数 (Theme Variables)
    ========================================================================== */
 :root {
-    /* ベースカラー */
-    --bg-light: #f8f9fa;        /* 全体の背景（オフホワイト） */
-    --table-green: #5d7a7a;     /* 卓の色（くすみのある青緑） */
-    --panel-bg: #ffffff;        /* パネル背景 */
-    
-    /* 牌のデザイン */
-    --tile-white: #ffffff;      /* 牌の表面 */
-    --tile-edge: #e0e0e0;       /* 牌の側面・影 */
-    --tile-text: #2c3e50;       /* 牌の文字（濃紺） */
-    --tile-manzu: #d35400;      /* 萬子：落ち着いたオレンジ */
-    --tile-pinzu: #2980b9;      /* 筒子：北欧ブルー */
-    --tile-souzu: #27ae60;      /* 索子：セージグリーン */
-    
-    /* UIアクセント */
-    --accent-gold: #d4af37;     /* リーチ棒や強調 */
-    --btn-primary: #4a6274;     /* ボタン主色 */
-    --btn-hover: #34495e;
-    --text-main: #34495e;
+    /* Light Theme (Default) */
+    --bg-app: #f4f4f2;
+    --bg-header: #ffffff;
+    --text-main: #2c3e50;
     --text-muted: #7f8c8d;
+    --table-bg: #5d7a7a;        /* 北欧風くすみグリーン */
+    --table-inner-shadow: rgba(0,0,0,0.15);
+    --panel-bg: #ffffff;
+    --card-bg: #f8f9fa;
+    --accent-color: #4a6274;
+    --accent-hover: #34495e;
+    --danger: #e74c3c;
+    --success: #27ae60;
+    
+    /* Tiles */
+    --tile-bg: #ffffff;
+    --tile-shadow: #d6d6d6;
+    --tile-text: #2c3e50;
+    --manzu: #d35400;
+    --pinzu: #2980b9;
+    --souzu: #2d7a4d;
 
-    /* アニメーション */
-    --transition: 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    /* Spacing & Transitions */
+    --radius-lg: 16px;
+    --radius-md: 8px;
+    --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme="dark"] {
+    --bg-app: #121212;
+    --bg-header: #1e1e1e;
+    --text-main: #e0e0e0;
+    --text-muted: #a0a0a0;
+    --table-bg: #2c3e46;        /* 深いダークティール */
+    --table-inner-shadow: rgba(0,0,0,0.4);
+    --panel-bg: #1e1e1e;
+    --card-bg: #252525;
+    --tile-bg: #e0e0e0;
+    --tile-shadow: #999999;
+    --tile-text: #1a1a1a;
 }
 
 /* ==========================================================================
-   2. リセット & ベースレイアウト
+   2. ベース設定
    ========================================================================== */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
 }
 
 body {
     font-family: 'Inter', 'Noto Sans JP', sans-serif;
-    background-color: var(--bg-light);
+    background-color: var(--bg-app);
     color: var(--text-main);
-    line-height: 1.6;
     height: 100vh;
-    display: flex;
-    justify-content: center;
-    overflow: hidden; /* スクロール禁止（アプリ感） */
+    overflow: hidden;
+    transition: background-color var(--transition);
 }
 
 #app-wrapper {
-    width: 100vw;
-    height: 100vh;
     display: grid;
     grid-template-areas: 
         "header header"
         "main aside";
-    grid-template-columns: 1fr 300px;
-    grid-template-rows: 60px 1fr;
+    grid-template-columns: 1fr 320px;
+    grid-template-rows: 70px 1fr;
+    height: 100vh;
 }
 
 /* ==========================================================================
-   3. ヘッダー情報（Header）
+   3. ヘッダー & 時計
    ========================================================================== */
 #game-header {
     grid-area: header;
-    background: var(--panel-bg);
-    border-bottom: 1px solid #eee;
-    padding: 0 20px;
-}
-
-.header-content {
-    height: 100%;
+    background: var(--bg-header);
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 0 24px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    z-index: 10;
 }
 
-.round-info { font-weight: 600; font-size: 1.2rem; }
-.sub-info { font-size: 0.8rem; color: var(--text-muted); margin-left: 8px; }
+.header-left, .header-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
 
-.label {
-    display: block;
-    font-size: 0.6rem;
+.digital-clock {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--text-main);
+    background: var(--card-bg);
+    padding: 4px 12px;
+    border-radius: var(--radius-md);
+}
+
+.round-badge {
     font-weight: 700;
-    color: var(--text-muted);
-    letter-spacing: 0.1em;
+    font-size: 1.2rem;
+    color: var(--accent-color);
 }
 
-.score-display #player-score {
-    font-size: 1.4rem;
+.score-box {
+    font-size: 1.3rem;
     font-weight: 300;
-    font-variant-numeric: tabular-nums;
+    letter-spacing: 1px;
+}
+
+.score-box i {
+    margin-right: 8px;
+    color: #f1c40f;
 }
 
 /* ==========================================================================
-   4. 麻雀卓エリア（Main Table）
+   4. 麻雀卓 (Main Table)
    ========================================================================== */
 #mahjong-table {
     grid-area: main;
-    background-color: var(--table-green);
+    background-color: var(--table-bg);
+    margin: 15px;
+    border-radius: 40px;
     position: relative;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    padding: 20px;
-    box-shadow: inset 0 0 100px rgba(0,0,0,0.1);
+    justify-content: flex-end;
+    padding: 40px;
+    box-shadow: inset 0 0 60px var(--table-inner-shadow);
+    overflow: hidden;
 }
 
-/* 捨て牌（河） */
-.river-container {
-    width: 240px; /* 6枚切り想定 */
-    margin: auto;
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 4px;
-}
-
-/* 中央ボード */
-.center-board {
+.wall-status {
     position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    text-align: center;
-    color: rgba(255,255,255,0.8);
-    pointer-events: none;
+    top: 30px;
+    right: 40px;
+    background: rgba(0,0,0,0.2);
+    color: white;
+    padding: 6px 15px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    backdrop-filter: blur(5px);
 }
 
-/* ==========================================================================
-   5. 牌のデザイン (Tile)
-   ========================================================================== */
-.tile {
-    width: clamp(34px, 5vw, 46px);
-    aspect-ratio: 3 / 4.2;
-    background: var(--tile-white);
-    border-radius: 4px;
-    position: relative;
-    cursor: pointer;
+.table-center {
+    flex-grow: 1;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 1.5rem;
-    box-shadow: 
-        0 2px 0 var(--tile-edge),
-        0 4px 6px rgba(0,0,0,0.1);
-    transition: var(--transition);
-    user-select: none;
 }
 
-.tile:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 10px 15px rgba(0,0,0,0.15);
-}
-
-/* ツモ切りした牌の明度を下げるなどの表現用 */
-.tile.tsumogiri {
-    filter: brightness(0.9);
+.river-layout {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
+    perspective: 600px;
 }
 
 /* ==========================================================================
-   6. 手牌エリア（Player Hand）
+   5. 牌のデザイン (The Tiles)
    ========================================================================== */
-.player-area {
+.tile {
+    width: clamp(38px, 4.5vw, 52px);
+    aspect-ratio: 3 / 4.2;
+    background: var(--tile-bg);
+    border-radius: 6px;
     display: flex;
     justify-content: center;
-    align-items: flex-end;
-    padding-bottom: 10px;
+    align-items: center;
+    font-size: 1.6rem;
+    font-weight: bold;
+    color: var(--tile-text);
+    position: relative;
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+    
+    /* 3D効果 */
+    box-shadow: 
+        0 3px 0 var(--tile-shadow),
+        0 6px 10px rgba(0,0,0,0.15);
 }
 
-.player-hand-wrapper {
+.tile:hover {
+    transform: translateY(-10px) scale(1.05);
+    box-shadow: 0 15px 20px rgba(0,0,0,0.2);
+    z-index: 5;
+}
+
+.tile-manzu { color: var(--manzu); }
+.tile-pinzu { color: var(--pinzu); }
+.tile-souzu { color: var(--souzu); }
+
+/* 手牌エリア */
+.player-hand-section {
+    width: 100%;
     display: flex;
-    gap: 12px;
+    justify-content: center;
+    padding-top: 20px;
 }
 
-.hand-main {
+.hand-flex-container {
+    display: flex;
+    align-items: flex-end;
+}
+
+.tiles-row {
     display: flex;
     gap: 2px;
 }
 
+.tsumo-spacer {
+    width: 15px;
+}
+
 /* ==========================================================================
-   7. サイドパネル (Training Panel)
+   6. サイドパネル (Training Panel)
    ========================================================================== */
 #training-panel {
     grid-area: aside;
     background: var(--panel-bg);
-    border-left: 1px solid #eee;
-    padding: 20px;
+    padding: 30px 24px;
+    border-left: 1px solid rgba(0,0,0,0.05);
     display: flex;
     flex-direction: column;
-    gap: 30px;
+    gap: 32px;
 }
 
-.helper-card {
-    background: var(--bg-light);
-    padding: 15px;
-    border-radius: 12px;
-    margin-top: 10px;
-}
-
-.helper-label {
-    font-size: 0.75rem;
-    font-weight: 600;
+h4 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
     color: var(--text-muted);
-    margin-bottom: 8px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.hint-card {
+    background: var(--card-bg);
+    padding: 20px;
+    border-radius: var(--radius-lg);
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px dashed var(--text-muted);
+}
+
+.stats-mini-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.stat-box {
+    background: var(--card-bg);
+    padding: 15px;
+    border-radius: var(--radius-md);
+    text-align: center;
+}
+
+.stat-label { font-size: 0.7rem; color: var(--text-muted); display: block; }
+.stat-value { font-size: 1.2rem; font-weight: 600; color: var(--accent-color); }
+
+/* ==========================================================================
+   7. アクション & ボタン
+   ========================================================================== */
+.btn-icon-alt {
+    background: var(--card-bg);
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    color: var(--text-main);
+    font-size: 1.1rem;
+    transition: var(--transition);
+}
+
+.btn-icon-alt:hover {
+    background: var(--accent-color);
+    color: white;
+}
+
+.btn-secondary {
+    padding: 12px;
+    border: 1px solid var(--text-muted);
+    background: transparent;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    color: var(--text-main);
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+    background: var(--card-bg);
+    border-color: var(--accent-color);
 }
 
 /* ==========================================================================
-   8. レスポンシブ (Responsive)
+   8. モーダル & レスポンシブ
    ========================================================================== */
-@media (max-width: 900px) {
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-card {
+    background: var(--panel-bg);
+    padding: 40px;
+    border-radius: 24px;
+    width: 90%;
+    max-width: 500px;
+    text-align: center;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+}
+
+@media (max-width: 1024px) {
     #app-wrapper {
         grid-template-areas: 
             "header"
             "main"
             "aside";
         grid-template-columns: 1fr;
-        grid-template-rows: 50px 1fr auto;
+        grid-template-rows: 60px 1fr auto;
     }
-    
     #training-panel {
-        border-left: none;
-        border-top: 1px solid #eee;
         flex-direction: row;
-        overflow-x: auto;
+        padding: 20px;
     }
-
-    .tile { width: 32px; }
 }
 
-/* ユーティリティ */
 .hidden { display: none !important; }
